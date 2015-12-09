@@ -10,7 +10,6 @@ import os
 from mako.template import Template
 
 import zc.buildout
-import zc.recipe.egg
 from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "redis.conf"))
