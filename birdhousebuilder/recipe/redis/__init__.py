@@ -13,8 +13,8 @@ import zc.buildout
 import zc.recipe.egg
 from birdhousebuilder.recipe import conda, supervisor
 
-templ_config_ = Template(filename=os.path.join(os.path.dirname(__file__), "redis.conf"))
-templ_cmd = Template("${bin_dir}/redis-server ${config}")
+templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "redis.conf"))
+templ_cmd = Template("${prefix}/bin/redis-server ${config}")
 
 class Recipe(object):
     """This recipe is used by zc.buildout.
@@ -27,6 +27,7 @@ class Recipe(object):
         self.options['prefix'] = self.prefix
         self.options['program'] = self.options.get('program', self.name)
         self.options['user'] = options.get('user', '')
+        self.options['loglevel'] = options.get('loglevel', 'notice')
         self.conf_filename = os.path.join(self.prefix, 'etc', 'redis.conf')
 
         self.bin_dir = b_options.get('bin-directory')
@@ -52,6 +53,7 @@ class Recipe(object):
         result = templ_config.render(**self.options)
         output = self.conf_filename
         conda.makedirs(os.path.dirname(output))
+        conda.makedirs(os.path.join(self.prefix, 'var', 'lib', 'redis'))
 
         try:
             os.remove(output)
@@ -71,7 +73,7 @@ class Recipe(object):
             self.name,
             {'user': self.options.get('user'),
              'program': self.options.get('program'),
-             'command': templ_cmd.render(config=self.conf_filename, bin_dir=self.bin_dir),
+             'command': templ_cmd.render(config=self.conf_filename, prefix=self.prefix),
              'stopwaitsecs': '30',
              'killasgroup': 'true',
              })
