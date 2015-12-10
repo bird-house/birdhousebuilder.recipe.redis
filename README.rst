@@ -31,7 +31,9 @@ This recipe supports the following options:
 
 **anaconda-home**
    Buildout option with the root folder of the Anaconda installation. Default: ``$HOME/anaconda``.
-   The default location can also be set with the environment variable ``ANACONDA_HOME``. Example::
+   The default location can also be set with the environment variable ``ANACONDA_HOME``. Example:
+
+.. code-block:: sh
 
      export ANACONDA_HOME=/opt/anaconda
 
@@ -40,6 +42,12 @@ This recipe supports the following options:
    1. ``anaconda-home`` in ``buildout.cfg``
    2. ``$ANACONDA_HOME``
    3. ``$HOME/anaconda``
+
+**port**
+   Accept connections on the specified port. Default: 6379.
+
+**loglevel**
+   Specify the server verbosity level (debug, verbose, notice, warning). Default: warning.
 
 
 Example usage

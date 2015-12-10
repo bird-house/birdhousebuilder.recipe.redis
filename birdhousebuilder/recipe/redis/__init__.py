@@ -26,7 +26,8 @@ class Recipe(object):
         self.options['prefix'] = self.prefix
         self.options['program'] = self.options.get('program', self.name)
         self.options['user'] = options.get('user', '')
-        self.options['loglevel'] = options.get('loglevel', 'notice')
+        self.options['port'] = options.get('port', '6379')
+        self.options['loglevel'] = options.get('loglevel', 'warning')
         self.conf_filename = os.path.join(self.prefix, 'etc', 'redis.conf')
 
         self.bin_dir = b_options.get('bin-directory')

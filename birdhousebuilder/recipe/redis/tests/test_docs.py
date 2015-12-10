@@ -23,7 +23,6 @@ def setUp(test):
     zc.buildout.testing.install_develop('birdhouse.recipe.redis', test)
 
     # Install any other recipes that should be available in the tests
-    #zc.buildout.testing.install('collective.recipe.foobar', test)
 
 
 def test_suite():
