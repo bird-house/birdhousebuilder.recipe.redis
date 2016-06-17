@@ -22,8 +22,10 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        self.prefix = self.options.get('prefix', conda.prefix())
+        
+        self.prefix = b_options.get('birdhouse-home', "/opt/birdhouse")
         self.options['prefix'] = self.prefix
+
         self.options['program'] = self.options.get('program', self.name)
         self.options['user'] = options.get('user', '')
         self.options['port'] = options.get('port', '6379')
@@ -44,10 +46,7 @@ class Recipe(object):
             self.buildout,
             self.name,
             {'pkgs': 'redis'})
-        if update == True:
-            return script.update()
-        else:
-            return script.install()
+        return script.install(update=update)
 
     def install_config(self):
         result = templ_config.render(**self.options)
