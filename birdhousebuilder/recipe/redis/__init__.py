@@ -13,7 +13,7 @@ import zc.buildout
 from birdhousebuilder.recipe import conda, supervisor
 
 templ_config = Template(filename=os.path.join(os.path.dirname(__file__), "redis.conf"))
-templ_cmd = Template("${prefix}/bin/redis-server ${config}")
+templ_cmd = Template("${env_path}/bin/redis-server ${config}")
 
 class Recipe(object):
     """This recipe is used by zc.buildout.
@@ -25,6 +25,9 @@ class Recipe(object):
         
         self.prefix = b_options.get('birdhouse-home', "/opt/birdhouse")
         self.options['prefix'] = self.prefix
+
+        self.env_path = conda.conda_env_path(buildout, options)
+        self.options['env_path'] = self.env_path
 
         self.options['program'] = self.options.get('program', self.name)
         self.options['user'] = options.get('user', '')
