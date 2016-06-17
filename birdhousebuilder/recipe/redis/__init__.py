@@ -75,7 +75,7 @@ class Recipe(object):
             self.name,
             {'user': self.options.get('user'),
              'program': self.options.get('program'),
-             'command': templ_cmd.render(config=self.conf_filename, prefix=self.prefix),
+             'command': templ_cmd.render(config=self.conf_filename, prefix=self.prefix, env_path=self.env_path),
              'stopwaitsecs': '30',
              'killasgroup': 'true',
              })
