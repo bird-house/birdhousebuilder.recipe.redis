@@ -63,7 +63,7 @@ class Recipe(object):
         result = templ_config.render(**self.options)
         output = self.conf_filename
         conda.makedirs(os.path.dirname(output))
-        conda.makedirs(os.path.join(self.options['var-prefix'], 'lib', 'redis'))
+        conda.makedirs(os.path.join(self.options['var_prefix'], 'lib', 'redis'))
 
         try:
             os.remove(output)
