@@ -1,10 +1,10 @@
 Changes
 *******
 
-0.2.0 (2016-06-17)
+0.2.0 (2016-06-19)
 ==================
 
-* Set installation prefix from buildout option birdhouse-home.
+* Use zc.recipe.deployment.
 
 0.1.0 (2015-12-10)
 ==================
