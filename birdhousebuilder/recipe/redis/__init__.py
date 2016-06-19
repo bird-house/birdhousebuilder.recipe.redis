@@ -22,9 +22,17 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
-        
-        self.prefix = b_options.get('birdhouse-home', "/opt/birdhouse")
-        self.options['prefix'] = self.prefix
+
+        deployment = self.deployment = options.get('deployment')
+        if deployment:
+            self.options['prefix'] = buildout[deployment].get('prefix')
+            self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
+            self.options['var_prefix'] = buildout[deployment].get('var-prefix')
+        else:
+            self.options['prefix'] = os.path.join(buildout['buildout']['parts-directory'], self.name)
+            self.options['etc_prefix'] = os.path.join(self.options['prefix'], 'etc')
+            self.options['var_prefix'] = os.path.join(self.options['prefix'], 'var')
+        self.prefix = self.options['prefix']
 
         self.env_path = conda.conda_env_path(buildout, options)
         self.options['env_path'] = self.env_path
@@ -33,7 +41,7 @@ class Recipe(object):
         self.options['user'] = options.get('user', '')
         self.options['port'] = options.get('port', '6379')
         self.options['loglevel'] = options.get('loglevel', 'warning')
-        self.conf_filename = os.path.join(self.prefix, 'etc', 'redis.conf')
+        self.conf_filename = os.path.join(self.options['etc_prefix'], 'redis.conf')
 
         self.bin_dir = b_options.get('bin-directory')
 
@@ -55,7 +63,7 @@ class Recipe(object):
         result = templ_config.render(**self.options)
         output = self.conf_filename
         conda.makedirs(os.path.dirname(output))
-        conda.makedirs(os.path.join(self.prefix, 'var', 'lib', 'redis'))
+        conda.makedirs(os.path.join(self.options['var-prefix'], 'lib', 'redis'))
 
         try:
             os.remove(output)
@@ -73,9 +81,10 @@ class Recipe(object):
         script = supervisor.Recipe(
             self.buildout,
             self.name,
-            {'user': self.options.get('user'),
+            {'deployment': self.deployment,
+             'user': self.options.get('user'),
              'program': self.options.get('program'),
-             'command': templ_cmd.render(config=self.conf_filename, prefix=self.prefix, env_path=self.env_path),
+             'command': templ_cmd.render(config=self.conf_filename, env_path=self.env_path),
              'stopwaitsecs': '30',
              'killasgroup': 'true',
              })
