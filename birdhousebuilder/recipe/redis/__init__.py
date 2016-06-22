@@ -7,6 +7,7 @@ Recipe redis:
 """
 
 import os
+import logging
 from mako.template import Template
 
 import zc.buildout
@@ -23,25 +24,30 @@ class Recipe(object):
         self.buildout, self.name, self.options = buildout, name, options
         b_options = buildout['buildout']
 
-        deployment = self.deployment = options.get('deployment')
-        if deployment:
-            self.options['prefix'] = buildout[deployment].get('prefix')
-            self.options['etc_prefix'] = buildout[deployment].get('etc-prefix')
-            self.options['var_prefix'] = buildout[deployment].get('var-prefix')
-        else:
-            self.options['prefix'] = os.path.join(buildout['buildout']['parts-directory'], self.name)
-            self.options['etc_prefix'] = os.path.join(self.options['prefix'], 'etc')
-            self.options['var_prefix'] = os.path.join(self.options['prefix'], 'var')
+        self.name = options.get('name', name)
+        self.options['name'] = self.name
+
+        self.logger = logging.getLogger(self.name)
+
+        deployment = zc.recipe.deployment.Install(buildout, "redis", {
+                                                'prefix': self.options['prefix'],
+                                                'user': self.options['user'],
+                                                'etc-user': self.options['user']})
+        deployment.install()
+
+        self.options['etc-prefix'] = deployment.options['etc-prefix']
+        self.options['var-prefix'] =  self.options['var_prefix'] =deployment.options['var-prefix']
+        self.options['etc-directory'] = self.options['etc_directory'] = deployment.options['etc-directory']
+        self.options['lib-directory'] = self.options['lib_directory'] = deployment.options['lib-directory']
+        self.options['log-directory'] = self.options['log_directory'] = deployment.options['log-directory']
         self.prefix = self.options['prefix']
 
         self.env_path = conda.conda_env_path(buildout, options)
         self.options['env_path'] = self.env_path
 
-        self.options['program'] = self.options.get('program', self.name)
-        self.options['user'] = options.get('user', '')
         self.options['port'] = options.get('port', '6379')
         self.options['loglevel'] = options.get('loglevel', 'warning')
-        self.conf_filename = os.path.join(self.options['etc_prefix'], 'redis.conf')
+        self.conf_filename = os.path.join(self.options['etc-directory'], 'redis.conf')
 
         self.bin_dir = b_options.get('bin-directory')
 
@@ -62,13 +68,6 @@ class Recipe(object):
     def install_config(self):
         result = templ_config.render(**self.options)
         output = self.conf_filename
-        conda.makedirs(os.path.dirname(output))
-        conda.makedirs(os.path.join(self.options['var_prefix'], 'lib', 'redis'))
-
-        try:
-            os.remove(output)
-        except OSError:
-            pass
 
         with open(output, 'wt') as fp:
             fp.write(result)
@@ -81,9 +80,9 @@ class Recipe(object):
         script = supervisor.Recipe(
             self.buildout,
             self.name,
-            {'deployment': self.deployment,
+            {'prefix': self.options['prefix'],
              'user': self.options.get('user'),
-             'program': self.options.get('program'),
+             'program': self.name,
              'command': templ_cmd.render(config=self.conf_filename, env_path=self.env_path),
              'stopwaitsecs': '30',
              'killasgroup': 'true',
